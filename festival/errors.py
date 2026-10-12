@@ -12,3 +12,7 @@ class ConflictError(FestivalError):
 
 class InvalidValueError(FestivalError):
     pass
+
+
+class StorageError(FestivalError):
+    pass
