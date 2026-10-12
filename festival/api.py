@@ -69,7 +69,7 @@ def create_app(storage: Storage) -> FastAPI:
         item["start"] = body.start.isoformat(timespec="minutes")
         try:
             return performance_from_dict(festival, item)
-        except (KeyError, TypeError):
+        except KeyError, TypeError:
             raise InvalidValueError(f"A {body.kind} needs more information.")
 
     @app.get("/api/festival")
@@ -98,7 +98,9 @@ def create_app(storage: Storage) -> FastAPI:
         return result
 
     @app.get("/api/programme")
-    def get_programme(day: date | None = None, venue: str | None = None) -> list[dict[str, Any]]:
+    def get_programme(
+        day: date | None = None, venue: str | None = None
+    ) -> list[dict[str, Any]]:
         performances = festival.performances if day is None else festival.programme(day)
         if venue is not None:
             festival.venue(venue)
@@ -212,7 +214,9 @@ def summary(performance: Performance) -> str:
         acts = ", ".join(act.name for act in performance.acts)
         return f"hosted by {performance.host.name}, with {acts}"
     if isinstance(performance, Workshop):
-        return f"with {performance.teacher.name}, {performance.places_left} place(s) left"
+        return (
+            f"with {performance.teacher.name}, {performance.places_left} place(s) left"
+        )
     return ""
 
 

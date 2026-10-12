@@ -23,7 +23,9 @@ def test_saving_then_loading_gives_the_same_festival(tmp_path):
     reloaded = copy.load()
     assert [v.slug for v in reloaded.venues] == [v.slug for v in original.venues]
     assert [a.slug for a in reloaded.artists] == [a.slug for a in original.artists]
-    assert [p.id for p in reloaded.performances] == [p.id for p in original.performances]
+    assert [p.id for p in reloaded.performances] == [
+        p.id for p in original.performances
+    ]
 
 
 def test_a_missing_file_gives_a_clear_error(tmp_path):

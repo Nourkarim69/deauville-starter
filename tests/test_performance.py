@@ -12,8 +12,9 @@ NORA = Artist("Nora Lebrun")
 
 
 def make_solo(start="2027-06-12T01:00", duration=60, min_age=0):
-    return Solo("After Hours", KIOSQUE, datetime.fromisoformat(start),
-                duration, NORA, min_age)
+    return Solo(
+        "After Hours", KIOSQUE, datetime.fromisoformat(start), duration, NORA, min_age
+    )
 
 
 def test_a_performance_cannot_be_created_directly():

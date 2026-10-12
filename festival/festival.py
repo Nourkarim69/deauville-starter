@@ -85,8 +85,7 @@ class Festival:
     def performances_of(self, artist_slug: str) -> list[Performance]:
         artist = self.artist(artist_slug)
         return [
-            p for p in self.performances
-            if artist.slug in {a.slug for a in p.artists()}
+            p for p in self.performances if artist.slug in {a.slug for a in p.artists()}
         ]
 
     def now_playing(self, at: datetime) -> list[Performance]:

@@ -66,4 +66,4 @@ def test_workshop_refuses_registrations_when_full():
 
 def test_workshop_needs_at_least_one_place():
     with pytest.raises(InvalidValueError):
-        Workshop("Improv", CABANE, START, 60, INES, 0)  
+        Workshop("Improv", CABANE, START, 60, INES, 0)

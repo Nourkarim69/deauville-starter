@@ -5,7 +5,6 @@ from festival.text import clean_name, slugify
 
 
 class Venue:
-
     def __init__(self, name: str, capacity: int, address: str) -> None:
         self._name = clean_name(name, "venue name")
         self._slug = slugify(self._name)

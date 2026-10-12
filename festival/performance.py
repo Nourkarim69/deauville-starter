@@ -10,8 +10,14 @@ DAY_ENDS_AT_HOUR = 6
 
 
 class Performance(ABC):
-    def __init__(self, title: str, venue: Venue, start: datetime,
-                 duration_minutes: int, description: str = "") -> None:
+    def __init__(
+        self,
+        title: str,
+        venue: Venue,
+        start: datetime,
+        duration_minutes: int,
+        description: str = "",
+    ) -> None:
         self._title = clean_name(title, "performance title")
         if not 1 <= duration_minutes <= 360:
             raise InvalidValueError(
@@ -60,21 +66,28 @@ class Performance(ABC):
 
     @property
     @abstractmethod
-    def kind(self) -> str:
-        ...
+    def kind(self) -> str: ...
 
     @abstractmethod
-    def artists(self) -> list[Artist]:
-        ...
+    def artists(self) -> list[Artist]: ...
 
 
 class Solo(Performance):
-    def __init__(self, title: str, venue: Venue, start: datetime,
-                 duration_minutes: int, artist: Artist, min_age: int = 0,
-                 description: str = "") -> None:
+    def __init__(
+        self,
+        title: str,
+        venue: Venue,
+        start: datetime,
+        duration_minutes: int,
+        artist: Artist,
+        min_age: int = 0,
+        description: str = "",
+    ) -> None:
         super().__init__(title, venue, start, duration_minutes, description)
         if not 0 <= min_age <= 18:
-            raise InvalidValueError(f"The minimum age goes from 0 to 18, not {min_age}.")
+            raise InvalidValueError(
+                f"The minimum age goes from 0 to 18, not {min_age}."
+            )
         self._artist = artist
         self._min_age = min_age
 
@@ -95,17 +108,28 @@ class Solo(Performance):
 
 
 class Lineup(Performance):
-    def __init__(self, title: str, venue: Venue, start: datetime,
-                 duration_minutes: int, host: Artist, acts: list[Artist],
-                 description: str = "") -> None:
+    def __init__(
+        self,
+        title: str,
+        venue: Venue,
+        start: datetime,
+        duration_minutes: int,
+        host: Artist,
+        acts: list[Artist],
+        description: str = "",
+    ) -> None:
         super().__init__(title, venue, start, duration_minutes, description)
         if len(acts) < 2:
-            raise InvalidValueError(f"{self.title} needs at least 2 acts, not {len(acts)}.")
+            raise InvalidValueError(
+                f"{self.title} needs at least 2 acts, not {len(acts)}."
+            )
         slugs = [act.slug for act in acts]
         if len(set(slugs)) != len(slugs):
             raise InvalidValueError(f"An act appears twice in {self.title}.")
         if host.slug in slugs:
-            raise InvalidValueError(f"{host.name} hosts {self.title} and cannot also be an act.")
+            raise InvalidValueError(
+                f"{host.name} hosts {self.title} and cannot also be an act."
+            )
         minimum = len(acts) * 10 + (len(acts) - 1) * 3
         if duration_minutes < minimum:
             raise InvalidValueError(
@@ -132,10 +156,17 @@ class Lineup(Performance):
 
 
 class Workshop(Performance):
-    def __init__(self, title: str, venue: Venue, start: datetime,
-                 duration_minutes: int, teacher: Artist, max_participants: int,
-                 participants: list[str] | None = None,
-                 description: str = "") -> None:
+    def __init__(
+        self,
+        title: str,
+        venue: Venue,
+        start: datetime,
+        duration_minutes: int,
+        teacher: Artist,
+        max_participants: int,
+        participants: list[str] | None = None,
+        description: str = "",
+    ) -> None:
         super().__init__(title, venue, start, duration_minutes, description)
         if max_participants < 1:
             raise InvalidValueError(
@@ -178,7 +209,9 @@ class Workshop(Performance):
         cleaned = clean_name(name, "participant name")
         for participant in self._participants:
             if participant.lower() == cleaned.lower():
-                raise ConflictError(f"{cleaned} is already registered for {self.title}.")
+                raise ConflictError(
+                    f"{cleaned} is already registered for {self.title}."
+                )
         if self.places_left == 0:
             raise ConflictError(f"{self.title} is full ({self.capacity} places).")
         self._participants.append(cleaned)

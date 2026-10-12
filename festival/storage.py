@@ -14,12 +14,10 @@ from festival.venue import Venue
 
 class Storage(ABC):
     @abstractmethod
-    def load(self) -> Festival:
-        ...
+    def load(self) -> Festival: ...
 
     @abstractmethod
-    def save(self, festival: Festival) -> None:
-        ...
+    def save(self, festival: Festival) -> None: ...
 
 
 class JsonStorage(Storage):
@@ -31,7 +29,9 @@ class JsonStorage(Storage):
             with open(self._path, encoding="utf-8") as file:
                 data = json.load(file)
         except OSError as error:
-            raise StorageError(f"Cannot read {self._path}: {error.strerror}.") from error
+            raise StorageError(
+                f"Cannot read {self._path}: {error.strerror}."
+            ) from error
         except json.JSONDecodeError as error:
             raise StorageError(
                 f"{self._path} is not valid JSON (line {error.lineno})."
@@ -47,11 +47,15 @@ class JsonStorage(Storage):
         temporary = self._path.with_suffix(".tmp")
         try:
             with open(temporary, "w", encoding="utf-8") as file:
-                json.dump(_festival_to_dict(festival), file, ensure_ascii=False, indent=2)
+                json.dump(
+                    _festival_to_dict(festival), file, ensure_ascii=False, indent=2
+                )
                 file.write("\n")
             os.replace(temporary, self._path)
         except OSError as error:
-            raise StorageError(f"Cannot write {self._path}: {error.strerror}.") from error
+            raise StorageError(
+                f"Cannot write {self._path}: {error.strerror}."
+            ) from error
 
 
 def _explain(error: Exception) -> str:
@@ -87,15 +91,24 @@ def performance_from_dict(festival: Festival, item: dict[str, Any]) -> Performan
     }
     kind = item["kind"]
     if kind == "solo":
-        return Solo(artist=festival.artist(item["artist"]),
-                    min_age=item.get("min_age", 0), **common)
+        return Solo(
+            artist=festival.artist(item["artist"]),
+            min_age=item.get("min_age", 0),
+            **common,
+        )
     if kind == "lineup":
-        return Lineup(host=festival.artist(item["host"]),
-                      acts=[festival.artist(slug) for slug in item["acts"]], **common)
+        return Lineup(
+            host=festival.artist(item["host"]),
+            acts=[festival.artist(slug) for slug in item["acts"]],
+            **common,
+        )
     if kind == "workshop":
-        return Workshop(teacher=festival.artist(item["teacher"]),
-                        max_participants=item["max_participants"],
-                        participants=item.get("participants", []), **common)
+        return Workshop(
+            teacher=festival.artist(item["teacher"]),
+            max_participants=item["max_participants"],
+            participants=item.get("participants", []),
+            **common,
+        )
     raise ValueError(f"unknown kind of performance {kind!r}")
 
 

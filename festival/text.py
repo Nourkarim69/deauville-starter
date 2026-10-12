@@ -1,6 +1,6 @@
-
 import re
 import unicodedata
+
 from festival.errors import InvalidValueError
 
 
@@ -10,6 +10,8 @@ def slugify(name: str) -> str:
     lower = ascii_text.lower()
     with_dashes = re.sub(r"[^a-z0-9]+", "-", lower)
     return with_dashes.strip("-")
+
+
 def clean_name(value: str, what: str) -> str:
     """Enlève les espaces autour d'un nom et refuse un nom vide."""
     cleaned = value.strip()

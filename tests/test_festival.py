@@ -14,7 +14,10 @@ def make_festival():
 
 def test_festival_lists_its_days():
     assert make_festival().days == [
-        date(2027, 6, 10), date(2027, 6, 11), date(2027, 6, 12), date(2027, 6, 13)
+        date(2027, 6, 10),
+        date(2027, 6, 11),
+        date(2027, 6, 12),
+        date(2027, 6, 13),
     ]
 
 
@@ -34,7 +37,10 @@ def test_artists_are_sorted_by_slug():
     festival = make_festival()
     festival.add_artist(Artist("Hugo Lemaire"))
     festival.add_artist(Artist("Élodie Marchal"))
-    assert [artist.slug for artist in festival.artists] == ["elodie-marchal", "hugo-lemaire"]
+    assert [artist.slug for artist in festival.artists] == [
+        "elodie-marchal",
+        "hugo-lemaire",
+    ]
 
 
 def test_two_artists_with_the_same_slug_are_the_same_artist():

@@ -62,7 +62,9 @@ def test_an_artist_needs_30_minutes_between_two_shows_anywhere():
 
 def test_the_artists_must_be_known_by_the_festival():
     with pytest.raises(NotFoundError):
-        make_festival().add_performance(solo("2027-06-11T21:00", artist=Artist("Nobody")))
+        make_festival().add_performance(
+            solo("2027-06-11T21:00", artist=Artist("Nobody"))
+        )
 
 
 def test_moving_onto_a_busy_slot_changes_nothing():

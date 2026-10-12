@@ -24,5 +24,8 @@ def test_now_shows_at_most_three_next_performances(capsys):
 def test_now_playing_and_up_next():
     festival = JsonStorage("data/festival.json").load()
     at = datetime(2027, 6, 10, 21, 0)
-    assert [p.title for p in festival.now_playing(at)] == ["Opening Gala", "Family Business"]
+    assert [p.title for p in festival.now_playing(at)] == [
+        "Opening Gala",
+        "Family Business",
+    ]
     assert len(festival.up_next(at)) == 3

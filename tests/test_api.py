@@ -59,12 +59,19 @@ def test_now(client):
 def test_create_move_and_delete_a_performance(client):
     created = client.post("/api/performances", json=gala())
     assert created.status_code == 201
-    assert created.json()["summary"] == "hosted by Paul Kerbrat, with Nora Lebrun, Max Pellerin"
+    assert (
+        created.json()["summary"]
+        == "hosted by Paul Kerbrat, with Nora Lebrun, Max Pellerin"
+    )
     moved = client.put(
-        "/api/performances/grand-casino-2027-06-13-1000", json=gala(start="2027-06-13T12:00")
+        "/api/performances/grand-casino-2027-06-13-1000",
+        json=gala(start="2027-06-13T12:00"),
     )
     assert moved.json()["id"] == "grand-casino-2027-06-13-1200"
-    assert client.delete("/api/performances/grand-casino-2027-06-13-1200").status_code == 204
+    assert (
+        client.delete("/api/performances/grand-casino-2027-06-13-1200").status_code
+        == 204
+    )
 
 
 def test_a_busy_venue_gives_409_and_changes_nothing(client):
@@ -81,13 +88,16 @@ def test_an_invalid_value_gives_422(client):
 def test_every_change_is_saved(tmp_path):
     copy = tmp_path / "festival.json"
     shutil.copy("data/festival.json", copy)
-    TestClient(create_app(JsonStorage(copy))).post("/api/artists", json={"name": "Zoé Test"})
+    TestClient(create_app(JsonStorage(copy))).post(
+        "/api/artists", json={"name": "Zoé Test"}
+    )
     assert "zoe-test" in [a.slug for a in JsonStorage(copy).load().artists]
 
 
 def test_register_a_participant(client):
     response = client.post(
-        "/api/performances/la-cabane-2027-06-11-1030/participants", json={"name": "Nour K."}
+        "/api/performances/la-cabane-2027-06-11-1030/participants",
+        json={"name": "Nour K."},
     )
     assert response.status_code == 201
     assert "Nour K." in response.json()["participants"]
