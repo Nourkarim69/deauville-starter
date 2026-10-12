@@ -1,147 +1,158 @@
-# Deauville Festival du Rire - project brief
+# Les Rieurs de Deauville
+### *ou le Festival du Rire, roman en Python*
 
-The Deauville Festival du Rire (10-13 June 2027) needs a platform for its
-programme: artists, venues and shows, with the scheduling rules a generic CMS
-cannot enforce. The website and the admin are already written. Everything
-behind them is yours to build, in Python.
+> « Le rire est le soleil qui chasse l'hiver du visage humain. »
+> Et le code est la nuit studieuse qui prépare ce soleil.
 
-> Replace this README with your own once the project works (see
-> [Submission](#submission)).
+## Livre premier : Ce que c'est que ce projet
 
-## What you get
+C'était en juin 1827… non, en juin **2027**, du dix au treize, sur cette côte
+normande où la mer, éternelle et grise, regarde rire les hommes. Deauville
+attendait son festival. Les planches attendaient les pas. Les salles
+attendaient les foules. Et derrière le site, derrière l'admin, derrière ces
+pages que d'autres mains avaient déjà tissées, il manquait une chose,
+la plus humble et la plus grande : **un cœur**. Ce cœur, c'est ce backend.
 
-| Path                                     | Content                                                        |
-| ---------------------------------------- | -------------------------------------------------------------- |
-| [data/festival.json](data/festival.json) | the 2027 edition: 4 venues, 12 artists, 23 performances        |
-| [web/public/](web/public/)               | the public website: programme, artists, "now on stage"         |
-| [web/admin/](web/admin/)                 | the admin: schedule, move and cancel performances, add artists |
-| [API.md](API.md)                         | the HTTP contract the website and the admin rely on            |
-| [main.py](main.py)                       | a few lines that read the data file: where you start           |
+Il y a ici un modèle, qui est la loi ; un stockage, qui est la mémoire ;
+une ligne de commande, qui est la voix ; et un serveur web, qui est la place
+publique où le peuple vient lire le programme.
 
-That is all: no package, no class, no test. The structure of the project is
-part of the work. The two HTML folders are static files; they only talk to
-your server through the routes of `API.md`.
+## Livre deuxième : De l'installation, ou comment l'on entre dans l'œuvre
 
-## What you build
-
-1. **The festival model**: venues, artists, three kinds of performances, and
-   the rules below. A rule must hold whoever uses the model: the command line,
-   the web API, or a test.
-2. **Storage**: load the festival from `data/festival.json`, save it back
-   after every change. Loading checks every rule again: a broken file gives a
-   clear error, not a traceback.
-3. **A command line**, at least:
-   - the programme of one festival day, in order;
-   - the list of the artists with their number of shows;
-   - what is on stage at a given moment, and the next 3 performances.
-4. **A web server**, with FastAPI: the routes of [API.md](API.md) under
-   `/api`, `web/public/` served at `/` and `web/admin/` at `/admin/`.
-5. **Your tests** (pytest), written along the way.
-
-## The rules
-
-### Names and identifiers
-
-- Every name (artist, venue, performance title, participant) is stored without
-  the spaces around it, and cannot be empty.
-- Artists and venues are identified by a **slug**: lower case ASCII letters,
-  digits and single dashes, accents removed.
-  `"Théâtre des Planches"` → `"theatre-des-planches"`,
-  `"Élodie  Marchal !"` → `"elodie-marchal"`. Two artists with the same slug
-  are the same artist; same for venues.
-- A performance is identified by its venue slug and its start:
-  `"le-kiosque-2027-06-12-0100"`.
-- Artists are listed in alphabetical order of their slug (`Élodie` before
-  `Hugo`); venues in the order they were added; performances by start time,
-  then by venue name.
-
-### Venues, performances and time
-
-- A venue has a name, a number of seats (at least 1) and an address.
-- Every performance has a title, a venue, a start (local time, no time zone),
-  a duration from 1 to 360 minutes, and a description that may be empty.
-- **A festival day ends at 06:00.** A show starting at 00:30 on 12 June is
-  part of the 11 June programme.
-- A performance must belong to a day of the festival (`first_day` to
-  `last_day` of the data file).
-- A venue needs **30 minutes** between the end of a performance and the start
-  of the next one.
-- An artist needs **30 minutes** between two performances, in any venue and
-  in any role (solo artist, host, act, teacher).
-- Venue, artists and performances referenced by slug or id must exist.
-
-### Three kinds of performances
-
-| Kind       | Who is on stage                     | Specific rules                                                                                                                 |
-| ---------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `solo`     | one artist                          | a minimum age for the audience, from 0 (everyone) to 18                                                                        |
-| `lineup`   | a host, then acts one after another | at least 2 acts, each one only once; the host is not an act; each act needs 10 minutes and the host 3 minutes between two acts |
-| `workshop` | a teacher, plus participants        | `max_participants` at least 1; registration by name, until full                                                                |
-
-- A lineup of 3 acts lasts at least `3 × 10 + 2 × 3 = 36` minutes.
-- A workshop has `min(max_participants, venue seats)` places. Participant
-  names are compared without case: `"Camille R."` is already registered if
-  `"camille r."` is.
-- The capacity of a solo show or a lineup is the number of seats of its venue.
-
-### Errors
-
-Every broken rule gives a sentence a festival organiser understands:
-`"Le Kiosque is busy with After Hours (2027-06-12 01:00-02:00). Leave 30
-minutes between two shows."`, not `KeyError: 'le-kiosque'`. The web API
-turns these errors into the status codes listed in `API.md` (404, 409, 422,
-500).
-
-A change that breaks a rule changes nothing: moving a performance onto a busy
-slot leaves it where it was.
-
-## Your decisions
-
-Nobody will tell you which modules or classes to write. Decide, then explain
-your choices in your README. A few questions to answer before coding:
-
-- Which objects does the festival have? What does each one know, what does
-  each one check?
-- What do the three kinds of performances share, and what differs?
-- Where does a rule live so that neither the command line nor the API can
-  bypass it? Can a caller add a performance without going through it?
-- How does the code calling the model know _which_ rule was broken?
-- If the data moved from a JSON file to a database tomorrow, which files
-  would change?
-
-You will defend these choices at the oral, on your own code.
-
-## Start
-
-Follow the project track, from its step 00:
+Il faut d'abord [uv](https://docs.astral.sh/uv/). Celui qui n'a point uv
+est comme le voyageur sans lanterne : il marche, mais il ne voit pas.
 
 ```bash
-uv init --no-package
-uv run main.py
+git clone https://github.com/Nourkarim69/deauville-starter.git
+cd deauville-starter
+uv sync
 ```
 
-The track builds the project step by step, from reading this file to the
-whole API: each step says what must work at its end, never which functions
-or classes to write.
+Trois lignes. Trois coups frappés à la porte. Et la porte s'ouvre.
 
-## Levels
+## Livre troisième : La voix, ou la ligne de commande
 
-| Level | Status   | Criteria                                                                                                         |
-| ----- | -------- | ---------------------------------------------------------------------------------------------------------------- |
-| P1    | required | the program runs from a fresh clone, the rules hold, errors give clear messages, the code reads well             |
-| P2    | expected | coherent classes: inheritance and abstract classes where they fit, encapsulation, your own errors, storage apart |
-| P3    | bonus    | `ruff format` and `ruff check` clean, type annotations, docstrings, your tests, `uv build` works, the web API    |
+Interrogez le festival, il vous répondra.
 
-Extension: a second storage in a SQLite database (e.g. SQLModel), usable in
-place of the JSON file without changing the model.
+```bash
+uv run main.py programme 2027-06-11              # le programme d'un jour
+uv run main.py artists                           # les artistes et leur nombre de spectacles
+uv run main.py now --at 2027-06-11T21:00         # ce qui se joue, et les trois qui suivent
+```
 
-## Submission
+Et voyez ce prodige : le spectacle de une heure du matin, le douze, appartient
+au onze. Car **une journée du festival ne meurt qu'à six heures**. La nuit
+n'est pas la fin du jour ; elle en est le dernier soupir.
 
-The last push before the deadline is graded. Your README replaces this one
-and says:
+## Livre quatrième : La place publique, ou le serveur web
 
-- what the project does, how to install it, run it and run the tests;
-- your structure: the modules and classes, and why (the questions above);
-- what is done, and what is not.
+```bash
+uv run uvicorn festival.api:app --reload
+```
 
-A fresh clone must work with `uv sync`, then the commands of your README.
+Alors s'ouvrent les trois portes de la cité :
+- http://127.0.0.1:8000, le site, où le peuple lit ;
+- http://127.0.0.1:8000/admin/, l'admin, où l'organisateur décide ;
+- http://127.0.0.1:8000/docs, la documentation, où le curieux comprend.
+
+## Livre cinquième : Les épreuves
+
+```bash
+uv run pytest
+uvx ruff check .
+uvx ruff format --check .
+uv build
+```
+
+Cinquante-huit tests. Cinquante-huit sentinelles qui veillent dans l'ombre.
+Que l'une tombe, et le développeur est averti. Le code sans tests est une
+ville sans remparts.
+
+## Livre sixième : La cité, ou la structure
+
+```
+festival/
+├── errors.py       les malheurs, nommés et classés
+├── text.py         slugify, qui ôte aux noms leurs accents comme l'exil ôte aux hommes leur patrie
+├── venue.py        Venue, la salle, qui a des murs et des places
+├── artist.py       Artist, l'artiste, qui a un nom et une âme
+├── performance.py  Performance (abstraite), Solo, Lineup, Workshop
+├── festival.py     Festival, qui rassemble tout et juge les conflits
+├── storage.py      Storage (abstraite) et JsonStorage, la mémoire
+├── cli.py          la voix
+└── api.py          la place publique
+tests/              les sentinelles
+```
+
+## Livre septième : Les choix, ou la conscience de l'auteur
+
+**Quels sont les êtres de ce monde, et que gardent-ils ?**
+Chaque objet est gardien de lui-même. `Venue`, `Artist` et les spectacles
+vérifient leurs propres lois dans leur constructeur : un nom vide, une salle
+sans place, une durée hors de un à trois cent soixante minutes, et l'objet
+refuse de naître. Ce qui n'est pas juste n'existe pas. Leurs attributs sont
+privés, et les `@property` sont des fenêtres et non des portes : on regarde,
+on ne touche pas. Telle est l'**encapsulation**.
+
+**Ce que les spectacles ont en commun, et ce qui les sépare.**
+Il y a des pères et des fils. `Performance` est le père, et le père est
+**abstrait** : il n'existe pas seul, il n'existe que dans ses enfants. Il leur
+lègue le titre, la salle, l'heure, la durée, et ces vérités qui se calculent
+au lieu de se stocker : `end`, `id`, `festival_day`, `capacity`. Il leur
+impose deux devoirs, `kind` et `artists()`, et nul fils ne peut vivre sans
+les accomplir. `Solo` est l'homme seul face à la foule. `Lineup` est la
+procession, un présentateur et ses artistes, chacun dix minutes, et trois
+minutes entre eux pour respirer. `Workshop` est l'école. Tous appellent
+`super().__init__()`, comme on honore son père ; tous ajoutent leurs propres
+lois. Et `Workshop` répond à sa manière à `capacity`, car une école de douze
+élèves dans une cabane de trois places n'a que trois places : c'est le
+**polymorphisme**, ou l'art de répondre chacun selon sa nature à la même
+question.
+
+**Où vit la loi, pour que nul ne l'élude ?**
+Dans `Festival._check`. C'est là que se jugent les conflits : la salle
+occupée, l'artiste qui ne peut être en deux lieux à la fois, la date qui fuit
+hors du festival, le nom que nul ne connaît. Trente minutes, dit la loi, entre
+deux spectacles d'une même salle ; trente minutes entre deux apparitions d'un
+même artiste. La ligne de commande, l'API, le chargement du fichier, tous
+passent par ce tribunal. Et la sentence est sans appel mais sans dommage :
+**une modification refusée ne change rien**, car on juge avant d'agir.
+
+**Comment sait-on quelle loi fut brisée ?**
+Les malheurs ont une famille. `FestivalError` est l'aïeule ; ses enfants sont
+`NotFoundError`, l'absence ; `ConflictError`, la discorde ;
+`InvalidValueError`, l'erreur ; `StorageError`, l'oubli. Chacun parle la
+langue de l'organisateur et non celle de la machine. La ligne de commande dit
+le message ; l'API le traduit en nombres : 404, 409, 422, 500.
+
+**Et si demain la mémoire changeait de demeure ?**
+Si le fichier JSON cédait la place à une base de données, un seul fichier
+tremblerait : `storage.py`. `Storage` est abstraite, comme une promesse ;
+il suffirait d'un `SqliteStorage` pour la tenir autrement. Le modèle, lui, ne
+saurait même pas que le monde a changé.
+
+## Livre huitième : Ce qui est accompli
+
+- le modèle tout entier, et toutes les lois de la consigne ;
+- la mémoire qui se relit en revérifiant chaque loi, et qui s'écrit après chaque changement ;
+- les trois commandes de la voix ;
+- toutes les routes d'`API.md`, le site et l'admin ;
+- cinquante-huit tests, `ruff` satisfait, `uv build` triomphant.
+
+## Livre neuvième : Ce qui reste dans l'ombre
+
+- l'extension SQLite, qui attend son heure (la classe `Storage` lui a préparé la place) ;
+- les docstrings, qui ne sont pas encore partout.
+
+L'œuvre n'est jamais finie ; elle est seulement rendue.
+
+## Épilogue : Des compagnons de route
+
+Nul ne marche seul. J'ai cheminé avec Claude, une intelligence artificielle,
+qui m'a expliqué Git, GitHub et les mystères de la programmation orientée
+objet, et qui m'a aidé à écrire et à relire ce code. Je le dis, car la vérité
+est la première des lois.
+
+---
+
+*Fait à ECPROUT, en octobre 2026, sous un ciel gris qui rêvait de Deauville.*
