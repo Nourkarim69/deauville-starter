@@ -47,6 +47,13 @@ class Festival:
     def artists(self) -> list[Artist]:
         return sorted(self._artists.values(), key=lambda artist: artist.slug)
 
+    @property
+    def performances(self) -> list[Performance]:
+        return sorted(
+            self._performances.values(),
+            key=lambda performance: (performance.start, performance.venue.name),
+        )
+
     def add_venue(self, venue: Venue) -> None:
         if venue.slug in self._venues:
             raise ConflictError(f"The venue {venue.name} already exists.")
@@ -66,3 +73,70 @@ class Festival:
         if slug not in self._artists:
             raise NotFoundError(f"There is no artist {slug!r}.")
         return self._artists[slug]
+
+    def performance(self, performance_id: str) -> Performance:
+        if performance_id not in self._performances:
+            raise NotFoundError(f"There is no performance {performance_id!r}.")
+        return self._performances[performance_id]
+
+    def programme(self, day: date) -> list[Performance]:
+        return [p for p in self.performances if p.festival_day == day]
+
+    def add_performance(self, performance: Performance) -> None:
+        self._check(performance)
+        self._performances[performance.id] = performance
+
+    def replace_performance(self, performance_id: str, new: Performance) -> None:
+        self.performance(performance_id)
+        self._check(new, ignore=performance_id)
+        del self._performances[performance_id]
+        self._performances[new.id] = new
+
+    def remove_performance(self, performance_id: str) -> None:
+        self.performance(performance_id)
+        del self._performances[performance_id]
+
+    def register(self, performance_id: str, name: str) -> Workshop:
+        performance = self.performance(performance_id)
+        if not isinstance(performance, Workshop):
+            raise InvalidValueError(f"{performance.title} is not a workshop.")
+        performance.register(name)
+        return performance
+
+    def _check(self, new: Performance, ignore: str | None = None) -> None:
+        self.venue(new.venue.slug)
+        for artist in new.artists():
+            self.artist(artist.slug)
+        if not self._first_day <= new.festival_day <= self._last_day:
+            raise ConflictError(
+                f"{new.title} is on {new.festival_day}, outside the festival "
+                f"({self._first_day} to {self._last_day})."
+            )
+        for other in self._performances.values():
+            if other.id == ignore:
+                continue
+            if not _too_close(new, other):
+                continue
+            if other.venue.slug == new.venue.slug:
+                raise ConflictError(
+                    f"{new.venue.name} is busy with {_describe(other)}. "
+                    "Leave 30 minutes between two shows."
+                )
+            other_slugs = {artist.slug for artist in other.artists()}
+            for artist in new.artists():
+                if artist.slug in other_slugs:
+                    raise ConflictError(
+                        f"{artist.name} is busy with {_describe(other)}. "
+                        "An artist needs 30 minutes between two performances."
+                    )
+
+
+def _too_close(a: Performance, b: Performance) -> bool:
+    return a.start < b.end + BREAK and b.start < a.end + BREAK
+
+
+def _describe(performance: Performance) -> str:
+    return (
+        f"{performance.title} "
+        f"({performance.start:%Y-%m-%d %H:%M}-{performance.end:%H:%M})"
+    )
