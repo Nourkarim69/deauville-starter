@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from festival.artist import Artist
 from festival.errors import ConflictError, InvalidValueError, NotFoundError
@@ -81,6 +81,19 @@ class Festival:
 
     def programme(self, day: date) -> list[Performance]:
         return [p for p in self.performances if p.festival_day == day]
+
+    def performances_of(self, artist_slug: str) -> list[Performance]:
+        artist = self.artist(artist_slug)
+        return [
+            p for p in self.performances
+            if artist.slug in {a.slug for a in p.artists()}
+        ]
+
+    def now_playing(self, at: datetime) -> list[Performance]:
+        return [p for p in self.performances if p.start <= at < p.end]
+
+    def up_next(self, at: datetime, count: int = 3) -> list[Performance]:
+        return [p for p in self.performances if p.start > at][:count]
 
     def add_performance(self, performance: Performance) -> None:
         self._check(performance)
